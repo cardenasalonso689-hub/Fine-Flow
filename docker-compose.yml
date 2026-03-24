@@ -1,0 +1,158 @@
+version: "3.9"
+
+# Fine Flow SaaS — Orquestación completa de microservicios
+# USO: docker-compose up -d, docker-compose down
+# Este archivo define la infraestructura completa de Fine Flow, incluyendo:
+# - Config Server para gestión centralizada de configuraciones
+# - Discovery Server para registro y descubrimiento de servicios
+# - API Gateway para enrutamiento y seguridad
+# - Microservicios de dominio (Identity, Academic, Profile, Evaluation, Support, Innovation, Report)
+# - ChromaDB para almacenamiento de vectores en el RAG del chatbot
+# - Volúmenes para persistencia de datos en Oracle y reportes
+
+networks:
+  fineflow-net:
+    driver: bridge
+
+volumes:
+  oracle-data:
+  reports-data:
+
+services:
+
+  # ─── Infraestructura ──────────────────────────────────────────────
+  config-server:
+    build: ./config-server
+    container_name: fineflow-config
+    ports: ["8888:8888"]
+    environment:
+      CONFIG_USER: admin
+      CONFIG_PASSWORD: ${CONFIG_PASSWORD:-secret}
+    networks: [fineflow-net]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  discovery-server:
+    build: ./discovery-server
+    container_name: fineflow-discovery
+    ports: ["8761:8761"]
+    depends_on:
+      config-server:
+        condition: service_healthy
+    networks: [fineflow-net]
+
+  # ─── Gateway ────────────────────────────────────────────────────
+  api-gateway:
+    build: ./api-gateway
+    container_name: fineflow-gateway
+    ports: ["8080:8080"]
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      EUREKA_URL: http://discovery-server:8761/eureka/
+    depends_on: [discovery-server]
+    networks: [fineflow-net]
+
+  # ─── Microservicios ───────────────────────────────────────────────
+  identity-service:
+    build: ./identity-service
+    container_name: fineflow-identity
+    ports: ["8081:8081"]
+    environment:
+      SPRING_R2DBC_URL: ${ORACLE_R2DBC_URL}
+      SPRING_R2DBC_USERNAME: ${ORACLE_USER}
+      SPRING_R2DBC_PASSWORD: ${ORACLE_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      EUREKA_URL: http://discovery-server:8761/eureka/
+    depends_on: [discovery-server]
+    networks: [fineflow-net]
+
+  academic-service:
+    build: ./academic-service
+    container_name: fineflow-academic
+    ports: ["8082:8082"]
+    environment:
+      SPRING_R2DBC_URL: ${ORACLE_R2DBC_URL}
+      SPRING_R2DBC_USERNAME: ${ORACLE_USER}
+      SPRING_R2DBC_PASSWORD: ${ORACLE_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      EUREKA_URL: http://discovery-server:8761/eureka/
+    depends_on: [discovery-server]
+    networks: [fineflow-net]
+
+  profile-service:
+    build: ./profile-service
+    container_name: fineflow-profile
+    ports: ["8083:8083"]
+    environment:
+      SPRING_R2DBC_URL: ${ORACLE_R2DBC_URL}
+      SPRING_R2DBC_USERNAME: ${ORACLE_USER}
+      SPRING_R2DBC_PASSWORD: ${ORACLE_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      EUREKA_URL: http://discovery-server:8761/eureka/
+    depends_on: [discovery-server]
+    networks: [fineflow-net]
+
+  evaluation-service:
+    build: ./evaluation-service
+    container_name: fineflow-evaluation
+    ports: ["8084:8084"]
+    environment:
+      SPRING_R2DBC_URL: ${ORACLE_R2DBC_URL}
+      SPRING_R2DBC_USERNAME: ${ORACLE_USER}
+      SPRING_R2DBC_PASSWORD: ${ORACLE_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      EUREKA_URL: http://discovery-server:8761/eureka/
+    depends_on: [discovery-server]
+    networks: [fineflow-net]
+
+  support-service:
+    build: ./support-service
+    container_name: fineflow-support
+    ports: ["8085:8085"]
+    environment:
+      SPRING_R2DBC_URL: ${ORACLE_R2DBC_URL}
+      SPRING_R2DBC_USERNAME: ${ORACLE_USER}
+      SPRING_R2DBC_PASSWORD: ${ORACLE_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      EUREKA_URL: http://discovery-server:8761/eureka/
+    depends_on: [discovery-server]
+    networks: [fineflow-net]
+
+  innovation-service:
+    build: ./innovation-service
+    container_name: fineflow-innovation
+    ports: ["8086:8086"]
+    environment:
+      SPRING_R2DBC_URL: ${ORACLE_R2DBC_URL}
+      SPRING_R2DBC_USERNAME: ${ORACLE_USER}
+      SPRING_R2DBC_PASSWORD: ${ORACLE_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      EUREKA_URL: http://discovery-server:8761/eureka/
+      FINEFLOW_CHATBOT_URL: http://chatbot-rag:8090
+    depends_on: [discovery-server]
+    networks: [fineflow-net]
+
+  report-service:
+    build: ./report-service
+    container_name: fineflow-reports
+    ports: ["8087:8087"]
+    environment:
+      SPRING_R2DBC_URL: ${ORACLE_R2DBC_URL}
+      SPRING_R2DBC_USERNAME: ${ORACLE_USER}
+      SPRING_R2DBC_PASSWORD: ${ORACLE_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      EUREKA_URL: http://discovery-server:8761/eureka/
+    volumes:
+      - reports-data:/reports
+    depends_on: [discovery-server]
+    networks: [fineflow-net]
+
+  # ─── ChromaDB para el RAG del chatbot ────────────────────────────
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: fineflow-chroma
+    ports: ["8000:8000"]
+    networks: [fineflow-net]

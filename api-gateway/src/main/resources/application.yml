@@ -1,0 +1,86 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+      routes:
+        # ─── Rutas PÚBLICAS (sin autenticación) ─────────────────────────
+        - id: identity-auth
+          uri: lb://identity-service
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - RemoveRequestHeader=Authorization
+
+        # ─── Identity (Colegios, Usuarios) ──────────────────────────────
+        - id: identity-service
+          uri: lb://identity-service
+          predicates:
+            - Path=/api/identity/**
+
+        # ─── Academic (Estructura MINEDU) ────────────────────────────────
+        - id: academic-service
+          uri: lb://academic-service
+          predicates:
+            - Path=/api/academic/**
+
+        # ─── Profile (Alumnos, Docentes, Apoderados) ─────────────────────
+        - id: profile-service
+          uri: lb://profile-service
+          predicates:
+            - Path=/api/profile/**
+
+        # ─── Evaluation (Asistencia, Notas) ──────────────────────────────
+        - id: evaluation-service
+          uri: lb://evaluation-service
+          predicates:
+            - Path=/api/evaluation/**
+
+        # ─── Support (Notificaciones, Auditoría) ─────────────────────────
+        - id: support-service
+          uri: lb://support-service
+          predicates:
+            - Path=/api/support/**
+
+        # ─── Innovation (Chat IA, Blockchain) ────────────────────────────
+        - id: innovation-service
+          uri: lb://innovation-service
+          predicates:
+            - Path=/api/innovation/**
+
+        # ─── Reports (PDF/Excel async) ────────────────────────────────────
+        - id: report-service
+          uri: lb://report-service
+          predicates:
+            - Path=/api/reports/**
+
+        # ─── Actuator / Health de todos los servicios ─────────────────────
+        - id: actuator-all
+          uri: lb://identity-service
+          predicates:
+            - Path=/actuator/**
+
+  # Config Server
+  config:
+    import: optional:configserver:http://config-server:8888
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-server:8761/eureka/
+
+fineflow:
+  jwt:
+    secret: ${JWT_SECRET}
+
+# CORS global
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
