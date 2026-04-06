@@ -37,4 +37,7 @@ public class StudentPersistenceAdapter implements StudentRepositoryPort {
     @Override public Mono<Void> deleteByIdAndSchoolId(String id, String schoolId) {
         return repo.deleteByIdAndSchoolId(id, schoolId);
     }
+    @Override public Flux<Student> searchBySchoolId(String schoolId, String query) {
+        return repo.searchBySchoolId(schoolId, query).map(mapper::toDomain);
+    }
 }

@@ -8,79 +8,84 @@ spring:
     gateway:
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+        - name: RequestSize
+          args:
+            maxSize: 10MB
       routes:
-        # ─── Rutas PÚBLICAS (sin autenticación) ─────────────────────────
         - id: identity-auth
-          uri: lb://identity-service
+          uri: http://identity-service:8081
           predicates:
             - Path=/api/auth/**
           filters:
             - RemoveRequestHeader=Authorization
 
-        # ─── Identity (Colegios, Usuarios) ──────────────────────────────
         - id: identity-service
-          uri: lb://identity-service
+          uri: http://identity-service:8081
           predicates:
             - Path=/api/identity/**
 
-        # ─── Academic (Estructura MINEDU) ────────────────────────────────
         - id: academic-service
-          uri: lb://academic-service
+          uri: http://academic-service:8082
           predicates:
             - Path=/api/academic/**
 
-        # ─── Profile (Alumnos, Docentes, Apoderados) ─────────────────────
         - id: profile-service
-          uri: lb://profile-service
+          uri: http://profile-service:8083
           predicates:
             - Path=/api/profile/**
 
-        # ─── Evaluation (Asistencia, Notas) ──────────────────────────────
         - id: evaluation-service
-          uri: lb://evaluation-service
+          uri: http://evaluation-service:8084
           predicates:
             - Path=/api/evaluation/**
 
-        # ─── Support (Notificaciones, Auditoría) ─────────────────────────
         - id: support-service
-          uri: lb://support-service
+          uri: http://support-service:8085
           predicates:
             - Path=/api/support/**
 
-        # ─── Innovation (Chat IA, Blockchain) ────────────────────────────
         - id: innovation-service
-          uri: lb://innovation-service
+          uri: http://innovation-service:8086
           predicates:
             - Path=/api/innovation/**
 
-        # ─── Reports (PDF/Excel async) ────────────────────────────────────
         - id: report-service
-          uri: lb://report-service
+          uri: http://report-service:8087
           predicates:
             - Path=/api/reports/**
 
-        # ─── Actuator / Health de todos los servicios ─────────────────────
-        - id: actuator-all
-          uri: lb://identity-service
-          predicates:
-            - Path=/actuator/**
-
-  # Config Server
-  config:
-    import: optional:configserver:http://config-server:8888
-
 eureka:
   client:
-    service-url:
-      defaultZone: http://discovery-server:8761/eureka/
+    enabled: false
 
 fineflow:
   jwt:
-    secret: ${JWT_SECRET}
+    secret: ${JWT_SECRET:dGVzdC1zZWNyZXQta2V5LWZvci1kZXYtMjU2LWJpdHM=}
 
-# CORS global
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+        slowCallRateThreshold: 100
+        slowCallDurationThreshold: 2s
+    instances:
+      default:
+        baseConfig: default
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 5s
+        cancelRunningFuture: true
+
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info,metrics,gateway
+  endpoint:
+    health:
+      show-details: always

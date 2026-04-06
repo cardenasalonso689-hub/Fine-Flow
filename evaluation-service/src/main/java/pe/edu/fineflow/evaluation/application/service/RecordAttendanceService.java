@@ -1,4 +1,5 @@
 package pe.edu.fineflow.evaluation.application.service;
+
 import org.springframework.stereotype.Service;
 import pe.edu.fineflow.common.event.AttendanceRecordedEvent;
 import pe.edu.fineflow.common.event.EventBus;
@@ -22,31 +23,29 @@ public class RecordAttendanceService implements RecordAttendanceUseCase {
     private final EventBus eventBus;
 
     public RecordAttendanceService(AttendanceRepositoryPort repo, EventBus eventBus) {
-        this.repo = repo; this.eventBus = eventBus;
+        this.repo = repo;
+        this.eventBus = eventBus;
     }
 
     @Override
     public Mono<Attendance> recordSingle(Attendance attendance) {
-        return TenantContext.getPrincipal().flatMap(principal ->
-            repo.existsByStudentIdAndDateAndAssignment(
-                    attendance.getStudentId(), attendance.getAttendanceDate(),
-                    attendance.getCourseAssignmentId(), principal.schoolId())
+        return TenantContext.getPrincipal().flatMap(principal -> repo.existsByStudentIdAndDateAndAssignment(
+                attendance.getStudentId(), attendance.getAttendanceDate(),
+                attendance.getCourseAssignmentId(), principal.schoolId())
                 .flatMap(exists -> {
-                    if (exists) return Mono.error(BusinessException.conflict(
-                            "ATTENDANCE_DUPLICATE", "Ya existe un registro para este alumno en esta fecha."));
+                    if (exists)
+                        return Mono.error(BusinessException.conflict(
+                                "ATTENDANCE_DUPLICATE", "Ya existe un registro para este alumno en esta fecha."));
                     attendance.setId(UuidGenerator.generate());
                     attendance.setSchoolId(principal.schoolId());
                     attendance.setRegisteredBy(principal.userId());
                     attendance.setCreatedAt(Instant.now());
                     return repo.save(attendance);
                 })
-                .doOnSuccess(saved ->
-                    eventBus.publish(new AttendanceRecordedEvent(
+                .doOnSuccess(saved -> eventBus.publish(new AttendanceRecordedEvent(
                         principal.schoolId(), principal.userId(), saved.getId(),
                         saved.getStudentId(), saved.getStatus(),
-                        saved.getAttendanceDate().toString()))
-                )
-        );
+                        saved.getAttendanceDate().toString()))));
     }
 
     @Override
@@ -69,7 +68,6 @@ public class RecordAttendanceService implements RecordAttendanceUseCase {
 
     @Override
     public Mono<Attendance> recordQrEntry(String qrToken, String schoolId) {
-        // TODO: validar HMAC-SHA256 del token, buscar student por qr_secret
         return Mono.error(new UnsupportedOperationException("QR validation not implemented yet"));
     }
 

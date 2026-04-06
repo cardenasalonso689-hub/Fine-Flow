@@ -8,5 +8,6 @@ public interface StudentRepositoryPort {
     Flux<Student> findAllBySchoolId(String schoolId);
     Flux<Student> findAllBySectionIdAndSchoolId(String sectionId, String schoolId);
     Mono<Boolean> existsByDocumentNumberAndSchoolId(String documentNumber, String schoolId);
-    Mono<Void>    deleteByIdAndSchoolId(String id, String schoolId);
+    Mono<Void> deleteByIdAndSchoolId(String id, String schoolId);
+    Flux<Student> searchBySchoolId(String schoolId, String query);
 }

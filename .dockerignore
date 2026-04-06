@@ -1,0 +1,13 @@
+**/target/
+**/.git/
+**/.gitignore
+**/node_modules/
+**/.idea/
+**/*.iml
+**/Dockerfile*
+**/docker-compose*.yml
+**/.env*
+**/README.md
+**/AGENTS.md
+**/fineflow-saas.log
+**/.vscode/

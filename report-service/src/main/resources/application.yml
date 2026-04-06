@@ -1,0 +1,34 @@
+server:
+  port: 8087
+
+spring:
+  application:
+    name: report-service
+  r2dbc:
+    url: ${ORACLE_R2DBC_URL:r2dbc:oracle://localhost:1521/FREEPDB1}
+    username: ${ORACLE_USER:FINEFLOW_APP}
+    password: ${ORACLE_PASSWORD:FineFlow_2025!}
+    options:
+      connectTimeout: 30s
+
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-server:8761/eureka/
+
+fineflow:
+  jwt:
+    secret: ${JWT_SECRET:dGVzdC1zZWNyZXQta2V5LWZvci1kZXYtMjU2LWJpdHM=}
+  reports:
+    output-dir: ${REPORTS_DIR:/reports}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

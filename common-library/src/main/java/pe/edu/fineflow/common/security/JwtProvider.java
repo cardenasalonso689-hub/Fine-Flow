@@ -1,39 +1,44 @@
 package pe.edu.fineflow.common.security;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import java.security.Key;
+
+import javax.crypto.SecretKey;
 import java.util.*;
 
 @Component
+@RequiredArgsConstructor
 public class JwtProvider {
 
     @Value("${fineflow.jwt.secret}")
     private String secret;
 
-    @Value("${fineflow.jwt.access-token-ms:900000}")    // 15 min default
+    @Value("${fineflow.jwt.access-token-ms:900000}")
     private long accessTokenMs;
 
-    @Value("${fineflow.jwt.refresh-token-ms:604800000}") // 7 days default
+    @Value("${fineflow.jwt.refresh-token-ms:604800000}")
     private long refreshTokenMs;
 
-    private Key signingKey;
+    private SecretKey signingKey;
 
     @PostConstruct
-    public void init() {
+    void init() {
         this.signingKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(secret));
     }
 
     public String generateAccessToken(UserPrincipal principal) {
         return Jwts.builder()
                 .subject(principal.userId())
-                .claim("schoolId",  principal.schoolId())
-                .claim("email",     principal.email())
-                .claim("role",      principal.role())
-                .claim("type",      "ACCESS")
+                .claim("schoolId", principal.schoolId())
+                .claim("email", principal.email())
+                .claim("role", principal.role())
+                .claim("type", "ACCESS")
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + accessTokenMs))
                 .id(UUID.randomUUID().toString())
@@ -45,7 +50,7 @@ public class JwtProvider {
         return Jwts.builder()
                 .subject(userId)
                 .claim("jti_ref", jti)
-                .claim("type",    "REFRESH")
+                .claim("type", "REFRESH")
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + refreshTokenMs))
                 .id(UUID.randomUUID().toString())
@@ -55,7 +60,7 @@ public class JwtProvider {
 
     public Claims parseAndValidate(String token) {
         return Jwts.parser()
-                .verifyWith((javax.crypto.SecretKey) signingKey)
+                .verifyWith(signingKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
@@ -71,8 +76,8 @@ public class JwtProvider {
         return new UserPrincipal(
                 claims.getSubject(),
                 claims.get("schoolId", String.class),
-                claims.get("email",    String.class),
-                claims.get("role",     String.class),
+                claims.get("email", String.class),
+                claims.get("role", String.class),
                 Set.of("ROLE_" + claims.get("role", String.class))
         );
     }

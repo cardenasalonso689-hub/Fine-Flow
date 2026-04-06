@@ -14,23 +14,42 @@
     <artifactId>api-gateway</artifactId>
     <packaging>jar</packaging>
     <name>FineFlow API Gateway</name>
-    <description>Enrutador principal y validador de JWT</description>
+    <description>Enrutador principal, seguridad JWT y fault tolerance</description>
 
     <dependencies>
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Gateway + Eureka Client -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-gateway</artifactId>
         </dependency>
-        
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
 
+        <!-- Fault Tolerance (Circuit Breaker) -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-circuitbreaker-reactor-resilience4j</artifactId>
+        </dependency>
+
+        <!-- Actuator for Health Checks -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- Common Library -->
         <dependency>
             <groupId>pe.edu.fineflow</groupId>
             <artifactId>common-library</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

@@ -42,7 +42,7 @@ public class ReportController {
     public Mono<ResponseEntity<byte[]>> download(@PathVariable String jobId) {
         return useCase.download(jobId)
                 .map(bytes -> ResponseEntity.ok()
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="report-" + jobId + ".pdf"")
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"report-" + jobId + ".pdf\"")
                         .contentType(MediaType.APPLICATION_PDF)
                         .body(bytes));
     }

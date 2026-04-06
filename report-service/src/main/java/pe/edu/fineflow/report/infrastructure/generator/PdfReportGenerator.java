@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 import pe.edu.fineflow.report.domain.model.ReportJob;
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
-import java.time.format.DateTimeFormatter;
 
 @Component
 public class PdfReportGenerator {

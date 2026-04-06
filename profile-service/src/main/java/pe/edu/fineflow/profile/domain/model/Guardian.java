@@ -1,19 +1,24 @@
 package pe.edu.fineflow.profile.domain.model;
+
 import java.time.Instant;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Guardian {
-    private String id, schoolId, userId, studentId, firstName, lastName;
-    private String relationship, phone, documentNumber;
+    private String id;
+    private String schoolId;
+    private String userId;
+    private String studentId;
+    private String firstName;
+    private String lastName;
+    private String relationship;
+    private String phone;
+    private String documentNumber;
+    private String email;
     private boolean isPrimaryContact;
     private Instant createdAt;
-    public String getId()        { return id; }
-    public String getSchoolId()  { return schoolId; }
-    public String getStudentId() { return studentId; }
-    public void setId(String v)  { this.id = v; }
-    public void setSchoolId(String v){ this.schoolId = v; }
-    public void setStudentId(String v){ this.studentId = v; }
-    public void setFirstName(String v){ this.firstName = v; }
-    public void setLastName(String v){ this.lastName = v; }
-    public void setRelationship(String v){ this.relationship = v; }
-    public void setPhone(String v){ this.phone = v; }
-    public void setCreatedAt(Instant v){ this.createdAt = v; }
 }

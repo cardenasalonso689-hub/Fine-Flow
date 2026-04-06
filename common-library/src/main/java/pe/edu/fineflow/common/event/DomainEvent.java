@@ -1,20 +1,22 @@
 package pe.edu.fineflow.common.event;
+
+import lombok.Getter;
+
 import java.time.Instant;
 import java.util.UUID;
+
+@Getter
 public abstract class DomainEvent {
-    private final String eventId;
+
+    private final String eventId = UUID.randomUUID().toString();
     private final String schoolId;
     private final String triggeredBy;
-    private final Instant occurredAt;
+    private final Instant occurredAt = Instant.now();
+
     protected DomainEvent(String schoolId, String triggeredBy) {
-        this.eventId = UUID.randomUUID().toString();
         this.schoolId = schoolId;
         this.triggeredBy = triggeredBy;
-        this.occurredAt = Instant.now();
     }
-    public String getEventId()     { return eventId; }
-    public String getSchoolId()    { return schoolId; }
-    public String getTriggeredBy() { return triggeredBy; }
-    public Instant getOccurredAt() { return occurredAt; }
+
     public abstract String getEventType();
 }

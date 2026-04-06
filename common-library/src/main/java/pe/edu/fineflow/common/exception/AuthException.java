@@ -30,4 +30,12 @@ public class AuthException extends BusinessException {
     public static AuthException accountLocked() {
         return new AuthException(ErrorCode.ACCOUNT_LOCKED);
     }
+
+    public static AuthException locked(String detail) {
+        return new AuthException(ErrorCode.ACCOUNT_LOCKED, detail);
+    }
+
+    public static BusinessException conflict(String code, String detail) {
+        return BusinessException.conflict(code, detail);
+    }
 }

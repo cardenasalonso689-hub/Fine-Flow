@@ -31,19 +31,19 @@ public class BlockchainService implements BlockchainUseCase {
         eventBus.stream(AttendanceRecordedEvent.class)
                 .flatMap(e -> appendBlock(e.getSchoolId(), e.getTriggeredBy(),
                         "ATTENDANCE", e.getAttendanceId(), "ATTENDANCE",
-                        "{"studentId":"" + e.getStudentId() + "","status":"" + e.getStatus() + ""}"))
+                        "{\"studentId\":\"" + e.getStudentId() + "\",\"status\":\"" + e.getStatus() + "\"}"))
                 .subscribe();
 
         eventBus.stream(ScoreRegisteredEvent.class)
                 .flatMap(e -> appendBlock(e.getSchoolId(), e.getTriggeredBy(),
                         "SCORE", e.getScoreId(), "STUDENT_SCORE",
-                        "{"studentId":"" + e.getStudentId() + "","score":" + e.getScore() + "}"))
+                        "{\"studentId\":\"" + e.getStudentId() + "\",\"score\":" + e.getScore() + "}"))
                 .subscribe();
 
         eventBus.stream(StudentEnrolledEvent.class)
                 .flatMap(e -> appendBlock(e.getSchoolId(), e.getTriggeredBy(),
                         "ENROLLMENT", e.getStudentId(), "STUDENT",
-                        "{"studentId":"" + e.getStudentId() + "","sectionId":"" + e.getSectionId() + ""}"))
+                        "{\"studentId\":\"" + e.getStudentId() + "\",\"sectionId\":\"" + e.getSectionId() + "\"}"))
                 .subscribe();
     }
 

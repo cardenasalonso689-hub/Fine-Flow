@@ -1,0 +1,26 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: identity-service
+  r2dbc:
+    url: ${ORACLE_R2DBC_URL:r2dbc:oracle:thin:@localhost:1521/FREEPDB1}
+    username: ${ORACLE_USER:FINEFLOW_APP}
+    password: ${ORACLE_PASSWORD:FineFlow_2025!}
+    options:
+      connectTimeout: 30s
+
+eureka:
+  client:
+    enabled: false
+
+fineflow:
+  jwt:
+    secret: ${JWT_SECRET:dGVzdC1zZWNyZXQta2V5LWZvci1kZXYtMjU2LWJpdHM=}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
